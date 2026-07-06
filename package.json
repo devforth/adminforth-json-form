@@ -1,0 +1,63 @@
+{
+  "name": "@adminforth/json-form",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "homepage": "https://adminforth.dev/docs/tutorial/Plugins/json-form/",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
+  },
+  "keywords": [
+    "adminforth",
+    "json",
+    "json-form",
+    "json-schema",
+    "form"
+  ],
+  "author": "DevForth (https://devforth.io)",
+  "license": "MIT",
+  "description": "JSON Schema driven form editor plugin for AdminForth",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devforth/adminforth-json-form.git"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "adminforth": "^3.7.1",
+    "semantic-release": "^24.2.1",
+    "semantic-release-slack-bot": "^4.0.2",
+    "typescript": "^5.7.3"
+  },
+  "peerDependencies": {
+    "adminforth": "^3.7.1"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "semantic-release-slack-bot",
+        {
+          "packageName": "@adminforth/json-form",
+          "notifyOnSuccess": true,
+          "notifyOnFail": true,
+          "slackIcon": ":package:",
+          "markdownReleaseNotes": true
+        }
+      ]
+    ],
+    "branches": [
+      "main",
+      {
+        "name": "next",
+        "prerelease": true
+      }
+    ]
+  }
+}

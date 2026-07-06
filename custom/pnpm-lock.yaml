@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      jedison:
+        specifier: ^1.13.0
+        version: 1.13.0
+
+packages:
+
+  jedison@1.13.0:
+    resolution: {integrity: sha512-0gNXh+F/+bdMU6mgeUupxjc2Y2lHK1qsUIMR9Gs1rhQYtsxBlHjCWGMG1UyMmU7pDHFcQ//fEOZaif2F0KmE8A==}
+
+snapshots:
+
+  jedison@1.13.0: {}
