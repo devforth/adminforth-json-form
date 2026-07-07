@@ -61,6 +61,5 @@ export default class JsonFormPlugin extends AdminForthPlugin {
 
     column.components.create = formComponent;
     column.components.edit = formComponent;
-    column.components.show = formComponent;
   }
 }
