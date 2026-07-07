@@ -190,10 +190,13 @@ onBeforeUnmount(() => {
    tallest one and switching tabs never reflows the form height. Inactive panes
    are hidden with opacity (not display:none) so they still occupy the cell.
    opacity — not visibility — because opacity groups the whole subtree: a nested
-   active pane inside a hidden parent can override visibility:hidden but cannot
-   override opacity:0. pointer-events keeps hidden panes non-interactive. */
-.af-json-form .jedi-tab-pane { grid-area: 1 / 1; opacity: 0; pointer-events: none; }
-.af-json-form .jedi-tab-pane.af-active { opacity: 1; pointer-events: auto; }
+   active pane inside a hidden parent cannot override opacity:0.
+   pointer-events is disabled on inactive panes and left UNSET on active ones so
+   they inherit it: a nested active pane inside an inactive parent inherits
+   pointer-events:none instead of forcing itself back to auto. */
+.af-json-form .jedi-tab-pane { grid-area: 1 / 1; opacity: 0; }
+.af-json-form .jedi-tab-pane:not(.af-active) { pointer-events: none; }
+.af-json-form .jedi-tab-pane.af-active { opacity: 1; }
 
 /* ---------- labels & descriptions ---------- */
 .af-json-form label,
