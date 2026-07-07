@@ -319,21 +319,62 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
 }
 
-/* ---------- array move buttons ---------- */
-.af-json-form .jedi-array-move-down {
-  
+/* ---------- array action button icons ----------
+   Jedison puts the action class directly on the <button> element
+   (e.g. <button class="jedi-btn jedi-array-delete">), so the icon is
+   rendered via ::before on the button itself. */
+.af-json-form .jedi-array-add::before,
+.af-json-form .jedi-array-add-after::before,
+.af-json-form .jedi-array-delete::before,
+.af-json-form .jedi-array-delete-all::before,
+.af-json-form .jedi-array-move-up::before,
+.af-json-form .jedi-array-move-down::before,
+.af-json-form .jedi-quick-add-property-toggle::before,
+.af-json-form .jedi-add-property-btn::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  -webkit-mask: var(--af-icon) center / contain no-repeat;
+  mask: var(--af-icon) center / contain no-repeat;
+}
+
+/* icon-only buttons: hide the text label jedison renders inside them */
+.af-json-form .jedi-array-add span,
+.af-json-form .jedi-array-add-after span,
+.af-json-form .jedi-array-delete span,
+.af-json-form .jedi-array-delete-all span,
+.af-json-form .jedi-array-move-up span,
+.af-json-form .jedi-array-move-down span,
+.af-json-form .jedi-quick-add-property-toggle span {
+  display: none;
+}
+
+.af-json-form .jedi-array-delete,
+.af-json-form .jedi-array-delete-all {
+  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1M6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z'/%3E%3C/svg%3E");
+}
+
+.af-json-form .jedi-array-add,
+.af-json-form .jedi-array-add-after,
+.af-json-form .jedi-add-property-btn,
+.af-json-form .jedi-quick-add-property-toggle {
+  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 5v14m-7-7h14'/%3E%3C/svg%3E");
 }
 
 .af-json-form .jedi-array-move-up {
-  
+  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m5 15 7-7 7 7'/%3E%3C/svg%3E");
 }
 
-.af-json-form .jedi-array-move-delete {
-  
+.af-json-form .jedi-array-move-down {
+  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m5 9 7 7 7-7'/%3E%3C/svg%3E");
 }
 
 /* ------------ popup padding ------------- */
-
+.jedi-modal-dialog {
+  @apply p-4 rounded-xl;
+} 
 
 /* ---------- jedi editor legend / title ---------- */
 
@@ -341,10 +382,8 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  @apply bg-gray-100 dark:bg-gray-800 px-2 !py-1 rounded-md border text-lightTextLabel dark:text-darkTextLabel ;
 }
 
-.jedi-editor-legend .jedi-quick-add-property-toggle {
-  
-}
 
 </style>
