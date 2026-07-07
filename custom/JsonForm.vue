@@ -185,9 +185,15 @@ onBeforeUnmount(() => {
 }
 
 /* ---------- tab panes (only the active one is shown) ---------- */
-.af-json-form .tab-content { width: 100%; }
-.af-json-form .jedi-tab-pane { display: none; }
-.af-json-form .jedi-tab-pane.af-active { display: block; }
+.af-json-form .tab-content { width: 100%; display: grid; }
+/* All panes overlap in the same grid cell so the container always sizes to the
+   tallest one and switching tabs never reflows the form height. Inactive panes
+   are hidden with opacity (not display:none) so they still occupy the cell.
+   opacity — not visibility — because opacity groups the whole subtree: a nested
+   active pane inside a hidden parent can override visibility:hidden but cannot
+   override opacity:0. pointer-events keeps hidden panes non-interactive. */
+.af-json-form .jedi-tab-pane { grid-area: 1 / 1; opacity: 0; pointer-events: none; }
+.af-json-form .jedi-tab-pane.af-active { opacity: 1; pointer-events: auto; }
 
 /* ---------- labels & descriptions ---------- */
 .af-json-form label,
@@ -373,9 +379,19 @@ onBeforeUnmount(() => {
 
 /* ------------ popup padding ------------- */
 .jedi-modal-dialog {
-  @apply p-4 rounded-xl;
+  @apply p-4 rounded-xl bg-lightDialogBackgorund dark:bg-darkDialogBackgorund;
+
 } 
 
+.jedi-modal-dialog .jedi-btn {
+  @apply bg-lightPrimary dark:bg-darkPrimary text-lightButtonsText dark:text-darkButtonsText border-lightPrimary dark:border-darkPrimary w-full flex items-center justify-center gap-2;
+}
+
+.dark dialog:-internal-dialog-in-top-layer::backdrop {
+  @media screen {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
 /* ---------- jedi editor legend / title ---------- */
 
 .jedi-editor-legend {
@@ -384,6 +400,14 @@ onBeforeUnmount(() => {
   gap: 0.4rem;
   @apply bg-gray-100 dark:bg-gray-800 px-2 !py-1 rounded-md border text-lightTextLabel dark:text-darkTextLabel ;
 }
+
+/* ---------- Table cell ---------- */
+
+.af-json-form .jedi-children-slot td > div{
+  @apply flex items-center justify-center w-full;
+}
+
+
 
 
 </style>
