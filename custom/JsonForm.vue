@@ -57,14 +57,11 @@ function publish() {
   }
   const firstError = errors.length ? (errors[0]?.messages?.[0] || 'Invalid value') : false;
   emit('update:inValidity', firstError);
-  console.log('pblish')
   if ((props.value === null || props.value === undefined) && Object.keys(val).length === 0) {
-    console.log('pblish empty. Initial value:', initialValue)
     emit('update:emptiness', true);
     lastEmitted = initialValue === null || initialValue === undefined ? '' : JSON.stringify(initialValue);
     emit('update:value', initialValue);
   } else {
-    console.log('pblish not empty')
     emit('update:emptiness', isEmpty(val));
     lastEmitted = JSON.stringify(val ?? null);
     emit('update:value', lastEmitted);
@@ -509,12 +506,16 @@ onBeforeUnmount(() => {
   }
 }
 
-.af-json-form #legend-label-root {
+.jedi-btn.jedi-quick-add-property-toggle {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.af-kv-legend #legend-label-root {
   margin-right: 0px !important;
 }
 
-.jedi-editor-legend {
-  display:  block;
+.af-kv-legend > .jedi-editor-legend-right {
+  display: none !important;
 }
-
 </style>

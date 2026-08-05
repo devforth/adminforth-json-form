@@ -12,6 +12,9 @@ export interface JsonFormSchema {
   /** Object */
   properties?: Record<string, JsonFormSchema>;
   required?: string[];
+  patternProperties?: Record<string, JsonFormSchema>;
+  /** Schema of free-form properties. `false` disables the key/value editor. */
+  additionalProperties?: JsonFormSchema | boolean;
 
   /** Array */
   items?: JsonFormSchema;
@@ -54,6 +57,12 @@ export interface JsonFormSchema {
 
   /** Enables drag & reorder for arrays. */
   "x-sortable"?: boolean;
+
+  /** Placeholder of the key input in key/value rows of a free-form object. */
+  "x-keyPlaceholder"?: string;
+
+  /** Label of the "Add property" button of a free-form object. */
+  "x-addPropertyContent"?: string;
 
   /** Mustache-like template for array item tab titles, e.g. `{{ i1 }}) {{ value.name }}`. */
   "x-titleTemplate"?: string;

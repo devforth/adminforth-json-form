@@ -166,6 +166,7 @@ export function makeKeyValueObjectEditor(Jedison: any) {
     build() {
       super.build();
       this.control.childrenSlot.classList.add('af-kv-rows');
+      this.control.legend?.classList.add('af-kv-legend');
       const footer = document.createElement('div');
       footer.classList.add('af-kv-footer');
       this.addBtn = this.theme.getButton({
