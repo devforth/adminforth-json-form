@@ -518,4 +518,10 @@ onBeforeUnmount(() => {
 .af-kv-legend > .jedi-editor-legend-right {
   display: none !important;
 }
+
+button.jedi-add-property-btn:not(.af-kv-add) {
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
 </style>
