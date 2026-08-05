@@ -8,6 +8,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import Jedison from 'jedison';
 import { makeAdminforthTheme } from './adminforthJedisonTheme';
+import { makeKeyValueObjectEditor, markKeyValueTextareas } from './keyValueObjectEditor';
 
 const props = defineProps<{
   column: any;
@@ -22,6 +23,7 @@ const emit = defineEmits(['update:value', 'update:inValidity', 'update:emptiness
 const hostRef = ref<HTMLElement | null>(null);
 let jedison: any = null;
 let lastEmitted = '';
+let initialValue: any = null;
 
 function parse(v: any): any {
   if (v == null) return undefined;
@@ -49,20 +51,48 @@ function publish() {
   if (!jedison) return;
   const val = jedison.getValue();
   const errors = jedison.getErrors();
+  const validationError = validateFormValue(val);
+  if (!validationError.ok) {
+    errors.unshift({ messages: [validationError.error] });
+  }
   const firstError = errors.length ? (errors[0]?.messages?.[0] || 'Invalid value') : false;
   emit('update:inValidity', firstError);
-  emit('update:emptiness', isEmpty(val));
-  lastEmitted = JSON.stringify(val ?? null);
-  emit('update:value', lastEmitted);
+  console.log('pblish')
+  if ((props.value === null || props.value === undefined) && Object.keys(val).length === 0) {
+    console.log('pblish empty. Initial value:', initialValue)
+    emit('update:emptiness', true);
+    lastEmitted = initialValue === null || initialValue === undefined ? '' : JSON.stringify(initialValue);
+    emit('update:value', initialValue);
+  } else {
+    console.log('pblish not empty')
+    emit('update:emptiness', isEmpty(val));
+    lastEmitted = JSON.stringify(val ?? null);
+    emit('update:value', lastEmitted);
+  }
+}
+
+function validateFormValue(value: Record<string, any>): {ok: boolean; error?: string} {
+  for (const [key, val] of Object.entries(value)) {
+    if (val === null || val === undefined || val === '') {
+      return { ok: false, error: `Value for key "${key}" is empty` };
+    }
+    if (key === null || key === undefined || key === '') {
+      return { ok: false, error: `Key is empty` };
+    }
+  }
+  return { ok: true };
 }
 
 onMounted(() => {
+  initialValue = parse(props.value);
   jedison = new Jedison.Create({
     container: hostRef.value,
     theme: makeAdminforthTheme(Jedison),
-    schema: props.meta.schema,
+    customEditors: [makeKeyValueObjectEditor(Jedison)],
+    schema: markKeyValueTextareas(props.meta.schema),
     data: parse(props.value),
     readOnly: !!props.readonly,
+    showErrors: 'input',
   });
 
   jedison.on('change', () => publish());
@@ -266,10 +296,7 @@ onBeforeUnmount(() => {
 }
 
 /* ---------- buttons ---------- */
-.af-json-form button {
-  @apply bg-lightInputBackground dark:bg-darkInputBackground
-         text-lightInputText dark:text-darkInputText
-         border border-lightInputBorder dark:border-darkInputBorder rounded-lg;
+.af-json-form button.af-kv-add {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -277,9 +304,6 @@ onBeforeUnmount(() => {
   font-size: 0.8125rem;
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-.af-json-form button:hover {
-  @apply border-lightInputBorderHover dark:border-darkInputBorderHover;
 }
 
 /* ---------- oneOf switcher ---------- */
@@ -332,6 +356,7 @@ onBeforeUnmount(() => {
    Jedison puts the action class directly on the <button> element
    (e.g. <button class="jedi-btn jedi-array-delete">), so the icon is
    rendered via ::before on the button itself. */
+.af-json-form .af-kv-add::before,
 .af-json-form .jedi-array-add::before,
 .af-json-form .jedi-array-add-after::before,
 .af-json-form .jedi-array-delete::before,
@@ -368,8 +393,15 @@ onBeforeUnmount(() => {
 .af-json-form .jedi-array-add,
 .af-json-form .jedi-array-add-after,
 .af-json-form .jedi-add-property-btn,
-.af-json-form .jedi-quick-add-property-toggle {
-  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 5v14m-7-7h14'/%3E%3C/svg%3E");
+.af-json-form .jedi-quick-add-property-toggle,
+.af-json-form .af-kv-add {
+  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M5 12h14m-7 7V5'/%3E%3C/svg%3E");
+}
+
+/* fixed icon size, so it does not follow the button font size */
+.af-json-form .af-kv-add::before {
+  width: 1rem;
+  height: 1rem;
 }
 
 .af-json-form .jedi-array-move-up {
@@ -410,7 +442,79 @@ onBeforeUnmount(() => {
   @apply flex items-center justify-center w-full;
 }
 
+/* ---------- key / value object rows (EditorObjectKeyValue) ----------
+   One row per entry: [key input] [value editor] [trash]. The value cell hosts
+   the regular jedison child editor, so its own description / error messages
+   render below the value input inside the cell. */
+.af-json-form .af-kv-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.af-json-form .af-kv-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: start;
+  gap: 0.5rem;
+}
+.af-json-form .af-kv-value > * {
+  margin-bottom: 0;
+}
+/* the value textarea is sized to its content by the editor (growValue), so it
+   starts one line tall - the 6rem minimum of the regular textareas and the
+   inner scrollbar would both work against that */
+.af-json-form .af-kv-value textarea {
+  min-height: 0;
+  overflow-y: hidden;
+  resize: none;
+}
+/* keep the row compact: the value editor renders these even when it has nothing
+   to say, which would push the row apart */
+.af-json-form .af-kv-value .jedi-description:empty,
+.af-json-form .af-kv-value .jedi-messages-slot:empty,
+.af-json-form .af-kv-value .jedi-actions-slot:empty {
+  display: none;
+}
+/* row level message (duplicate key) spans the whole row */
+.af-json-form .af-kv-messages {
+  grid-column: 1 / -1;
+}
+.af-json-form .af-kv-messages:empty {
+  display: none;
+}
 
+.af-json-form .af-kv-delete {
+  --af-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' fill-rule='evenodd' clip-rule='evenodd' d='M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414M10 6h4V4h-4zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0z'/%3E%3C/svg%3E");
+  background: transparent;
+  border: 0;
+  padding: 0;
+  justify-content: center;
+  width: 1.5rem;
+  /* input height, so the icon sits next to the value input, not to the row */
+  height: 2.4rem;
+  font-size: 1.5rem; /* the icon mask is sized in em */
+  @apply text-lightFormFieldTextColor dark:text-darkFormFieldTextColor;
+}
+.af-json-form .af-kv-footer {
+  margin-top: 0.75rem;
+}
 
+@media (max-width: 640px) {
+  /* key on its own line, value + trash below it */
+  .af-json-form .af-kv-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .af-json-form .af-kv-key {
+    grid-column: 1 / -1;
+  }
+}
+
+.af-json-form #legend-label-root {
+  margin-right: 0px !important;
+}
+
+.jedi-editor-legend {
+  display:  block;
+}
 
 </style>

@@ -87,6 +87,7 @@ Standard JSON-Schema keywords: `type` (`object` / `array` / `string` / `integer`
 |-----------|-----------------------|-------------------------------------------------------------|
 | object    | `nav-vertical`        | Each property becomes a section in a vertical tab bar        |
 | object    | `grid`                | Properties laid out on a 12-column grid (see `x-grid`)       |
+| object    | `key-value`           | Editable key / value rows (see below); the default for free-form objects |
 | object    | *(none)*              | Properties stacked vertically                                |
 | array     | `nav-horizontal`      | One tab per item; add / remove / reorder                     |
 | array     | `table` / `table-object` | Editable table of rows                                    |
@@ -99,6 +100,47 @@ Standard JSON-Schema keywords: `type` (`object` / `array` / `string` / `integer`
 | scalar    | `checkbox`            | Single checkbox (for `boolean`)                            |
 | scalar    | *(none)*              | Text / number input, `enum` → dropdown, `boolean` → dropdown |
 
+### Free-form objects (key / value maps)
+
+An object that declares no `properties` / `patternProperties` and allows additional
+ones is edited as a list of rows instead of jedison's popup based property editor:
+
+```ts
+{
+  name: 'specifications',
+  schema: {
+    title: 'Specifications',
+    type: 'object',
+    additionalProperties: { type: 'string' },
+  },
+}
+```
+
+```
+┌──────────────┬────────────────────────────┬───┐
+│ engine       │ V8                         │ 🗑 │
+│ color        │ red                        │ 🗑 │
+└──────────────┴────────────────────────────┴───┘
+  + Add property
+```
+
+* **Add property** appends a row right away — no popup. The new key is an empty
+  string and gets the focus, so you can type it immediately. Since an object can
+  hold only one `""` property, clicking Add again while an unnamed row is still
+  there just focuses that row.
+* The **key is edited inline** and is applied when the input loses focus (or on
+  Enter). The entry keeps its position and its value. Renaming to a key that
+  already exists is refused with an inline message and the input rolls back.
+* The **trash button** removes the entry directly, without a confirmation popup.
+* The value cell holds the regular editor for `additionalProperties`, so any value
+  type (including nested objects/arrays), its `x-format` and its validation
+  messages keep working.
+
+`x-format: 'key-value'` is accepted as an explicit marker but is not needed —
+free-form objects use this editor by default. Objects with declared `properties`,
+with `patternProperties`, with `additionalProperties: false`, or with another
+`x-format` (`grid`, `nav-vertical`, …) are rendered by jedison as before.
+
 ### Other `x-*` keywords
 
 | Keyword            | Applies to        | Description                                                            |
@@ -107,6 +149,8 @@ Standard JSON-Schema keywords: `type` (`object` / `array` / `string` / `integer`
 | `x-enumTitles`     | `enum` / boolean  | Human-readable labels for each `enum` value (same order)              |
 | `x-messages`       | any               | Per-rule custom validation messages, e.g. `{ minLength, required }`   |
 | `x-titleIconClass` | fields            | Icon class rendered near the field title (e.g. `bi bi-person-fill`)   |
+| `x-keyPlaceholder` | free-form objects | Placeholder of the key input in key / value rows (default `Key`)      |
+| `x-addPropertyContent` | objects       | Label of the "Add property" button                                    |
 | `x-sortable`       | arrays            | Enables reordering controls                                          |
 | `x-titleTemplate`  | array items       | Tab title template, e.g. `{{ i1 }}) {{ value.name }}`                 |
 | `x-discriminator`  | `oneOf` objects   | Property name used to distinguish `oneOf` branches                    |
@@ -130,6 +174,10 @@ Object properties declared with `x-format: nav-vertical` render as a left-hand t
 column (one tab per property), and `nav-horizontal` arrays render as a top tab bar;
 the theme also implements proper active-tab/pane switching (the stock jedison default
 theme relies on `:target`, which is unusable inside a SPA).
+
+Free-form objects are rendered by a custom jedison editor
+(`keyValueObjectEditor.ts`, registered through jedison's `customEditors` option)
+that replaces the add-property / properties popups with inline key / value rows.
 
 `jedison` is declared as a dependency of the plugin's frontend components
 (`custom/package.json`) and is installed automatically into the AdminForth SPA bundle.
