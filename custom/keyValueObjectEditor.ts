@@ -1,13 +1,4 @@
-import { buttonBaseStyles, buttonVariantStyles } from "@/afcl"
-
-/**
- * The afcl style strings are multi line, classList.add rejects whitespace.
- */
-function addClasses(element: HTMLElement, ...styles: string[]) {
-  styles.forEach((style) => {
-    element.classList.add(...style.split(/\s+/).filter(Boolean));
-  });
-}
+import { styleButton } from './adminforthJedisonTheme';
 
 function hasOwn(obj: any, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key);
@@ -174,7 +165,8 @@ export function makeKeyValueObjectEditor(Jedison: any) {
           ?? this.instance.jedison.translator.translate('objectAddProperty'),
         icon: 'add',
       });
-      addClasses(this.addBtn, 'af-kv-add', buttonBaseStyles, buttonVariantStyles.secondary, 'af-button-shadow');
+      this.addBtn.classList.add('af-kv-add');
+      styleButton(this.addBtn, 'secondary', { size: 'md' });
       if (this.readOnly) {
         footer.style.display = 'none';
       }
@@ -364,10 +356,8 @@ export function makeKeyValueObjectEditor(Jedison: any) {
       const messages = document.createElement('div');
       const keyInput = document.createElement('input');
       const deleteLabel = this.instance.jedison.translator.translate('arrayDelete');
+      // the theme renders it as a trash icon button, its label stays for screen readers and as a tooltip
       const deleteBtn = this.theme.getDeleteItemBtn({ content: deleteLabel });
-      // the button renders as a trash icon only, its label is hidden by CSS
-      deleteBtn.setAttribute('aria-label', deleteLabel);
-      deleteBtn.setAttribute('title', deleteLabel);
 
       row.classList.add('af-kv-row');
       keyCell.classList.add('af-kv-key');
